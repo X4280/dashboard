@@ -1,0 +1,61 @@
+import React, { useState, useEffect } from 'react';
+import GridLayout from 'react-grid-layout';
+import 'react-grid-layout/css/styles.css';
+import 'react-resizable/css/styles.css';
+
+export default function Home() {
+  // Default layout if none is saved
+  const defaultLayout = [
+    { i: 'a', x: 0, y: 0, w: 4, h: 2 },
+    { i: 'b', x: 4, y: 0, w: 4, h: 2 },
+    { i: 'c', x: 8, y: 0, w: 4, h: 2 },
+  ];
+
+  // State for the layout
+  const [layout, setLayout] = useState(defaultLayout);
+
+  // Load saved layout from localStorage on mount
+  useEffect(() => {
+    const saved = window.localStorage.getItem('dashboard-layout');
+    if (saved) {
+      try {
+        setLayout(JSON.parse(saved));
+      } catch (e) {
+        console.error('Error parsing saved layout:', e);
+      }
+    }
+  }, []);
+
+  // Save layout to localStorage whenever it changes
+  const onLayoutChange = (newLayout) => {
+    setLayout(newLayout);
+    window.localStorage.setItem('dashboard-layout', JSON.stringify(newLayout));
+  };
+
+  return (
+    <div style={{ padding: 20 }}>
+      <h1 style={{ marginBottom: 20 }}>My Draggable Dashboard</h1>
+      <GridLayout
+        className="layout"
+        layout={layout}
+        cols={12}
+        rowHeight={30}
+        width={1200}
+        isDraggable={true}
+        isResizable={true}
+        margin={[10, 10]}
+        onLayoutChange={onLayoutChange}
+      >
+        <div key="a" style={{ background: '#dfe6e9', padding: 10 }}>
+          Widget A
+        </div>
+        <div key="b" style={{ background: '#fab1a0', padding: 10 }}>
+          Widget B
+        </div>
+        <div key="c" style={{ background: '#74b9ff', padding: 10 }}>
+          Widget C
+        </div>
+      </GridLayout>
+    </div>
+  );
+}
