@@ -1,21 +1,33 @@
-import React, { useState, useEffect } from 'react';
-import GridLayout from 'react-grid-layout';
+// pages/_app.js
 import 'react-grid-layout/css/styles.css';
 import 'react-resizable/css/styles.css';
+import '../styles/globals.css';
+
+export default function App({ Component, pageProps }) {
+  return <Component {...pageProps} />;
+}
+
+
+// pages/index.js
+import React, { useState, useEffect } from 'react';
+import dynamic from 'next/dynamic';
+// Dynamically import react-grid-layout to avoid SSR issues
+const GridLayout = dynamic(
+  () => import('react-grid-layout').then(mod => mod.WidthProvider(mod.Responsive)),
+  { ssr: false }
+);
 
 export default function Home() {
-  // Default layout if none is saved
   const defaultLayout = [
     { i: 'a', x: 0, y: 0, w: 4, h: 2 },
     { i: 'b', x: 4, y: 0, w: 4, h: 2 },
     { i: 'c', x: 8, y: 0, w: 4, h: 2 },
   ];
 
-  // State for the layout
   const [layout, setLayout] = useState(defaultLayout);
 
-  // Load saved layout from localStorage on mount
   useEffect(() => {
+    if (typeof window === 'undefined') return;
     const saved = window.localStorage.getItem('dashboard-layout');
     if (saved) {
       try {
@@ -26,36 +38,58 @@ export default function Home() {
     }
   }, []);
 
-  // Save layout to localStorage whenever it changes
   const onLayoutChange = (newLayout) => {
     setLayout(newLayout);
-    window.localStorage.setItem('dashboard-layout', JSON.stringify(newLayout));
+    if (typeof window !== 'undefined') {
+      window.localStorage.setItem('dashboard-layout', JSON.stringify(newLayout));
+    }
   };
 
   return (
-    <div style={{ padding: 20 }}>
-      <h1 style={{ marginBottom: 20 }}>My Draggable Dashboard</h1>
+    <div className="container">
+      <h1>My Draggable Dashboard</h1>
       <GridLayout
         className="layout"
-        layout={layout}
-        cols={12}
+        layouts={{ lg: layout }}
+        breakpoints={{ lg: 1200, md: 996, sm: 768, xs: 480 }}
+        cols={{ lg: 12, md: 10, sm: 6, xs: 4 }}
         rowHeight={30}
-        width={1200}
-        isDraggable={true}
-        isResizable={true}
+        isDraggable
+        isResizable
         margin={[10, 10]}
-        onLayoutChange={onLayoutChange}
+        onLayoutChange={(layout) => onLayoutChange(layout)}
       >
-        <div key="a" style={{ background: '#dfe6e9', padding: 10 }}>
-          Widget A
-        </div>
-        <div key="b" style={{ background: '#fab1a0', padding: 10 }}>
-          Widget B
-        </div>
-        <div key="c" style={{ background: '#74b9ff', padding: 10 }}>
-          Widget C
-        </div>
+        <div key="a" className="widget">Widget A</div>
+        <div key="b" className="widget">Widget B</div>
+        <div key="c" className="widget">Widget C</div>
       </GridLayout>
     </div>
   );
 }
+
+// styles/globals.css
+html, body, .container {
+  margin: 0;
+  padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen;
+  height: 100%;
+  width: 100%;
+}
+
+.container {
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.layout {
+  background: #f5f6fa;
+}
+
+.widget {
+  background: white;
+  border: 1px solid #dcdde1;
+  padding: 10px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
