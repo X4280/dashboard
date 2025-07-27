@@ -1,0 +1,4 @@
+html, body, .container { margin:0; padding:0; }
+.container { padding:20px; max-width:1200px; margin:auto; }
+.layout { background:#f5f6fa; }
+.widget { background:white; border:1px solid #dcdde1; padding:10px; }
